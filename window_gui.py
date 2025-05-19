@@ -1,15 +1,147 @@
 import sys
-
-
-from PySide6.QtWidgets import (QPushButton, QLineEdit, QLabel,
-                               QWidget, QVBoxLayout, QHBoxLayout, QApplication, QMessageBox)
+from PySide6.QtWidgets import( QApplication, QWidget, QLabel, QPushButton,
+                               QMainWindow, QVBoxLayout, QLineEdit, QHBoxLayout, QMessageBox)
 from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from mpl_toolkits.mplot3d import Axes3D
 import sympy as sp
+
+class TasbehWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.counter = 0
+
+        self.setWindowTitle("Tasbih")
+        self.setWindowIcon(QIcon("myapp_icon_order.ico"))
+        self.setGeometry(520, 280, 250, 200)
+        self.setFixedSize(250, 200)
+
+        main_layout = QVBoxLayout()
+
+        title = QLabel("Hi, Welcome to my App!")
+
+        second_layout = QHBoxLayout()
+        self.count_button = QPushButton("Subhanallah")
+        self.reset_button = QPushButton("Reset")
+        self.about_button = QPushButton("About")
+        self.about_button.setFixedSize(60, 20)
+        second_layout.addWidget(self.count_button)
+        second_layout.addWidget(self.reset_button)
+
+        self.result = QLabel("0")
+
+        main_layout.addWidget(self.about_button, alignment=Qt.AlignRight)
+        main_layout.addWidget(title)
+        main_layout.addLayout(second_layout)
+        main_layout.addWidget(self.result)
+
+        self.setLayout(main_layout)
+
+        self.count_button.clicked.connect(self.count_num)
+        self.reset_button.clicked.connect(self.reset_counter)
+        self.about_button.clicked.connect(self.about_msg)
+
+    def word_tasbeh(self):
+        if self.counter < 33:
+            return "Subhanallah"
+
+        elif self.counter <= 66:
+            return "Alhamdulillah"
+
+        else:
+            return "Allahu Akbar"
+
+    def count_num(self):
+        self.counter += 1
+        self.result.setText(str(self.counter))
+
+        new_word = self.word_tasbeh()
+        self.count_button.setText(new_word)
+
+    def reset_counter(self):
+        reply = QMessageBox.question(self, "Reset Counter", "Do you really want to reset counter?",
+                                     QMessageBox.Yes | QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.counter = 0
+            self.result.setText("0")
+            self.count_button.setText("Subhanallah")
+
+        else:
+            pass
+
+
+    def about_msg(self):
+        QMessageBox.information(self, "About", "The tasbih, as a tool for counting, allows you to keep your focus on the "
+                                               "dhikr, rather than trying to keep count mentally. Tasbihs also help focus your attention "
+                                               "on the dhikr you are doing by connecting your mind to your body, specifically to your fingers")
+
+
+
+class RegisterForm(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Register Form")
+        self.setGeometry(550, 250, 400, 300)
+        self.setWindowIcon(QIcon("register_photo.ico"))
+
+        self.label = QLabel("Enter your name: ", self)
+        self.label.setGeometry(160, 0,400, 30)
+
+        self.fill_name = QLineEdit(self)
+        self.fill_name.setGeometry(110, 40, 180, 30)
+
+        self.button = QPushButton("REGISTER", self)
+        self.button.setGeometry(140, 80, 120, 30)
+        self.button.clicked.connect(self.greet)
+
+        self.label_2 = QLabel(" ", self)
+        self.label_2.setGeometry(120, 120, 400, 30)
+
+    def greet(self):
+        name = self.fill_name.text()
+        if name.strip():
+            self.label_2.setText(f"{name} registered successfully")
+        else:
+            self.label_2.setText("Please fill the blank!")
+
+
+class RegistrationFormNewVersion(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Register")
+        self.setWindowIcon(QIcon("register_photo.ico"))
+        self.setGeometry(500, 300, 230, 300)
+
+        layout = QVBoxLayout()
+
+        self.label = QLabel("Enter Your Name: ")
+        self.input_box = QLineEdit()
+        self.button = QPushButton("Register")
+        self.label_2 = QLabel("")
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.input_box)
+        layout.addWidget(self.button)
+        layout.addWidget(self.label_2)
+
+        self.setLayout(layout)
+
+        self.button.clicked.connect(self.greet)
+
+    def greet(self):
+        name = self.input_box.text()
+        if name.strip():
+            self.label_2.setText(f"{name} registered successfully 🎉!")
+        else:
+            self.label_2.setText("Please fill the blank!")
+
+
 
 
 class GraphicCalculator(QWidget):
@@ -17,34 +149,23 @@ class GraphicCalculator(QWidget):
         super().__init__()
 
         self.setWindowTitle("Graphic Calculator")
-        self.setGeometry(320, 80, 900, 700)
+        self.setGeometry(380, 150, 900, 700)
         self.setWindowIcon(QIcon("images.ico"))
 
         main_layout = QVBoxLayout()
         secondary_layout = QHBoxLayout()
         third_degree_layout = QHBoxLayout()
-        fourth_layout = QHBoxLayout()
 
         self.canvas = FigureCanvas(Figure(figsize=(5, 4)))
         self.ax = self.canvas.figure.subplots()
-        self.toolbar = NavigationToolbar(self.canvas, self)
 
         self.formula_box = QLineEdit()
-        self.formula_box.setText('cos(x)')
-        self.formula_box.setPlaceholderText("Formula of f(x), example cos(x)")
         self.limit_box = QLineEdit()
-        self.limit_box.setText("-8, 8, 40000")
-        self.limit_box.setPlaceholderText("start, end, points (e.g. -5, 5, 1000)")
 
-        self.button_check = QPushButton("More Option")
+        self.button_check = QPushButton("Show")
         self.button_check.setCheckable(True)
 
-        self.calculate_button = QPushButton("Plot Graph!")
-        self.calculate_critical_points = QPushButton("Critical Points!")
-        self.calculate_critical_points.setCheckable(True)
-        self.three_d_button = QPushButton("Plot 3D!")
-        self.three_d_button.setCheckable(True)
-        self.clear_all_button = QPushButton("CLEAR ALL!")
+        self.calculate_button = QPushButton("Calculate!")
 
         self.explain = QLabel("Calculate Area From: ")
         self.explain.hide()
@@ -59,11 +180,8 @@ class GraphicCalculator(QWidget):
         self.clear_button_area = QPushButton("Clear!")
         self.clear_button_area.hide()
 
-
-
         secondary_layout.addWidget(self.formula_box)
         secondary_layout.addWidget(self.limit_box)
-        secondary_layout.addWidget(self.calculate_button)
 
         third_degree_layout.addWidget(self.explain)
         third_degree_layout.addWidget(self.input_box)
@@ -73,25 +191,17 @@ class GraphicCalculator(QWidget):
         third_degree_layout.addWidget(self.clear_button_area)
 
 
-        fourth_layout.addWidget(self.calculate_critical_points)
-        fourth_layout.addWidget(self.three_d_button)
-        fourth_layout.addWidget(self.clear_all_button)
-
-
         main_layout.addWidget(self.button_check)
         main_layout.addLayout(third_degree_layout)
-        main_layout.addWidget(self.toolbar)
         main_layout.addWidget(self.canvas)
         main_layout.addLayout(secondary_layout)
-        main_layout.addLayout(fourth_layout)
+        main_layout.addWidget(self.calculate_button)
 
         self.setLayout(main_layout)
-
         self.calculate_button.clicked.connect(self.calculate)
         self.button_check.clicked.connect(self.show_input)
         self.calculate_area.clicked.connect(self.operate_area)
         self.clear_button_area.clicked.connect(self.clear_area)
-        self.calculate_critical_points.clicked.connect(self.find_critical)
 
     def calculate(self):
         limit_values = self.limit_box.text()
@@ -116,7 +226,6 @@ class GraphicCalculator(QWidget):
             self.ax.plot(x, y, color = 'red', label = f"Function: {y_value}")
             self.ax.plot(x, y_2, color = "blue", linestyle = '--', label = f"Derivative: {y_diff}")
             self.ax.legend()
-            self.ax.set_ylim(a[0],a[1])
             self.ax.set_title(f"y = {y_value}")
             self.ax.grid(True)
             self.canvas.draw()
@@ -138,7 +247,7 @@ class GraphicCalculator(QWidget):
             self.clear_button_area.show()
 
         else:
-            self.button_check.setText("More Option")
+            self.button_check.setText("Show")
             self.input_box.hide()
             self.input_box_2.hide()
             self.explain.hide()
@@ -159,7 +268,7 @@ class GraphicCalculator(QWidget):
                 f = sp.sympify(self.formula_box.text())
 
                 integ_f = sp.integrate(f, (x, num_1, num_2))
-                print(type(f))
+
                 f_lambdify = sp.lambdify(x, f, modules=['numpy'])
 
                 x_fill = np.linspace(num_1, num_2, 300)
@@ -177,53 +286,4 @@ class GraphicCalculator(QWidget):
             i.remove()
         self.canvas.draw()
 
-    def find_critical(self):
-        limit_values = self.limit_box.text()
-
-        try:
-            a = [int(i) for i in limit_values.split(",")]
-            x = np.linspace(a[0], a[1], a[2])
-
-            symbol_x = sp.Symbol('x')
-            f_x = sp.sympify(self.formula_box.text())
-            diff_f = sp.diff(f_x)
-
-            f_x_numpy = sp.lambdify(symbol_x, f_x, modules=['numpy'])
-            diff_new_numpy = sp.lambdify(symbol_x, diff_f, modules=['numpy'])
-
-            diff_f_x_numbers = diff_new_numpy(x)
-
-            critical_x = []
-            critical_y = []
-
-            for i in range(len(diff_f_x_numbers)):
-                if  abs(diff_f_x_numbers[i]) < 10**-int(len(str(a[2]))-2):
-                    critical_x.append(x[i])
-                    critical_y.append(f_x_numpy(x[i]))
-                
-
-
-            if self.calculate_critical_points.isChecked():
-                self.critical_points_plot = self.ax.scatter(critical_x, critical_y, color='green', marker='x', label='Critical Points')
-                self.ax.legend()
-                self.canvas.draw()
-
-            else:
-                if self.critical_points_plot:
-                    self.critical_points_plot.remove()
-                    self.ax.legend()
-                    self.canvas.draw()
-
-
-
-
-        except:
-            QMessageBox.information(self, "Error", f"Couldn't find critical points!")
-
-
-
-app = QApplication(sys.argv)
-window = GraphicCalculator()
-window.show()
-app.exec()
 
